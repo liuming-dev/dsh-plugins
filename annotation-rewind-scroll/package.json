@@ -1,0 +1,59 @@
+{
+  "name": "dsh-annotation-rewind-scroll",
+  "version": "0.1.0",
+  "description": "Annotate replies and documents; edit past user messages and rerun the conversation from that point. Use ↑/↓ or Page Up/Page Down to scroll between user messages in the chat, or recall past user inputs in the composer to edit and send.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./client.history.js": "./client.history.js"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "host-history.js",
+    "history-contract.js",
+    "client.history.js",
+    "RELEASING.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuming-dev/dsh-plugins.git",
+    "directory": "annotation-rewind-scroll"
+  },
+  "homepage": "https://github.com/liuming-dev/dsh-plugins#readme",
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "annotation",
+    "rewind",
+    "scroll"
+  ],
+  "scripts": {
+    "test": "node test/run.mjs",
+    "test:browser": "node test/input-e2e.mjs",
+    "pack:check": "node scripts/check-package.mjs",
+    "prepublishOnly": "npm run pack:check"
+  }
+}

@@ -1,0 +1,171 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><style>
+  :root{
+  --dsw-alias-bg-overlay:#fff; --dsw-alias-bg-layer-1:#f7f8fa; --dsw-alias-bg-layer-2:#f1f2f5; --dsw-alias-bg-layer-3:#e7e9ee;
+  --dsw-alias-label-primary:#14161c; --dsw-alias-label-secondary:#5b606b; --dsw-alias-label-tertiary:#8b909b;
+  --dsw-alias-border-l1:#e6e8ec; --dsw-alias-border-l2:#d3d7de;
+  --dsw-alias-brand-primary:#3b6ef2; --dsw-alias-state-error-primary:#c0392b;
+  --page:#eceef2; --card:#fff; --code:#262a31;
+ --dsw-font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;}
+  body{margin:0;background:var(--page);color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-family);padding:24px;display:grid;gap:18px;width:760px}
+  .card{position:relative;background:var(--card);border:1px solid var(--dsw-alias-border-l1);border-radius:16px;padding:16px 18px 18px}
+  .cap{font:600 10.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dsw-alias-label-tertiary);margin-bottom:12px}
+  .code{font:12.5px/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--code);white-space:pre-wrap}
+  .code mark{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 16%,transparent);border-radius:3px;color:inherit}
+  .composer{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--dsw-alias-border-l1);border-radius:14px;background:var(--card)}
+  .ph{flex:1;color:var(--dsw-alias-label-tertiary);font-size:13px}
+  .round{width:26px;height:26px;border-radius:999px;border:1px solid var(--dsw-alias-border-l1);display:grid;place-items:center;color:var(--dsw-alias-label-tertiary)}
+  .mid{height:330px}
+  .dsa-pill{position:absolute;display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px 0 5px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 26%,var(--dsw-alias-border-l1,rgba(0,0,0,.12)));
+  background:color-mix(in srgb,var(--dsw-alias-bg-overlay,#fff) 92%,transparent);backdrop-filter:blur(10px) saturate(1.1);color:var(--dsw-alias-label-primary,#111);
+  font:500 13px/1 var(--dsw-font-family,system-ui,-apple-system,sans-serif);cursor:pointer;
+  box-shadow:0 1px 2px rgba(15,18,26,.06),0 10px 28px rgba(15,18,26,.14);
+  transition:transform .12s ease,box-shadow .16s ease,border-color .16s ease;animation:dsa-in .14s cubic-bezier(.2,.8,.2,1)}
+  .dsa-pill:hover{transform:translateY(-1px);border-color:var(--dsw-alias-brand-primary,#3b6ef2);box-shadow:0 2px 6px rgba(15,18,26,.08),0 14px 36px rgba(15,18,26,.18)}
+  .dsa-pill:active{transform:translateY(0) scale(.985)}
+  .dsa-pill:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#3b6ef2);outline-offset:2px}
+  .dsa-pill__plus{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:999px;
+  background:color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 13%,transparent);color:var(--dsw-alias-brand-primary,#3b6ef2);
+  font:600 14px/1 var(--dsw-font-family,system-ui);padding-bottom:1px}
+  .dsa-pill__label{letter-spacing:.01em}
+  .dsa-chip{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 9px;border-radius:8px;
+  border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.12));background:transparent;color:var(--dsw-alias-label-secondary,#555);
+  font:500 12px/1 var(--dsw-font-family,system-ui);cursor:pointer;transition:background-color .14s ease,color .14s ease,border-color .14s ease}
+  .dsa-chip:hover,.dsa-chip[aria-expanded=true]{background:var(--dsw-alias-bg-layer-2,rgba(0,0,0,.05));color:var(--dsw-alias-label-primary,#111);border-color:var(--dsw-alias-border-l2,rgba(0,0,0,.16))}
+  .dsa-chip:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#3b6ef2);outline-offset:2px}
+  .dsa-chip__count{font-variant-numeric:tabular-nums;font-weight:600;color:var(--dsw-alias-label-primary,#111)}
+  .dsa-chip__sep{width:1px;height:10px;background:var(--dsw-alias-border-l1,rgba(0,0,0,.14))}
+  .dsa-chip__label{color:var(--dsw-alias-label-secondary,#666)}
+  .dsa-chip__note{display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#8f8f8f)}
+  .dsa-chip:hover .dsa-chip__note,.dsa-chip[aria-expanded=true] .dsa-chip__note{color:var(--dsw-alias-brand-primary,#3b6ef2)}
+  .dsa-pop{position:absolute;z-index:70;width:min(420px,calc(100vw - 32px));max-height:min(420px,calc(100vh - 140px));
+  display:flex;flex-direction:column;border-radius:14px;background:var(--dsw-alias-bg-overlay,#fff);color:var(--dsw-alias-label-primary,#111);
+  border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.1));box-shadow:0 1px 2px rgba(15,18,26,.06),0 18px 48px rgba(15,18,26,.18);
+  animation:dsa-in .16s cubic-bezier(.2,.8,.2,1);font:12.5px/1.55 var(--dsw-font-family,system-ui)}
+  .dsa-pop__head{display:flex;align-items:center;gap:8px;padding:11px 14px 10px;border-bottom:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.07));flex:0 0 auto}
+  .dsa-pop__dot{width:6px;height:6px;border-radius:999px;background:var(--dsw-alias-brand-primary,#3b6ef2);box-shadow:0 0 0 3px color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 12%,transparent)}
+  .dsa-pop__title{font-weight:600;font-size:12.5px;letter-spacing:.01em}
+  .dsa-pop__badge{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 6px;border-radius:6px;
+  background:color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 10%,transparent);color:var(--dsw-alias-brand-primary,#3b6ef2)}
+  .dsa-pop__hint{margin-left:auto;font-size:10.5px;letter-spacing:.02em;color:var(--dsw-alias-label-tertiary,#8a8a8a);white-space:nowrap}
+  .dsa-pop__list{overflow:auto;padding:4px 6px 6px;scrollbar-width:thin}
+  .dsa-item{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;padding:12px 8px 12px 10px;border-radius:10px;transition:background-color .12s ease}
+  .dsa-item+.dsa-item{border-top:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.06))}
+  .dsa-item:hover{background:var(--dsw-alias-bg-layer-1,rgba(0,0,0,.025))}
+  .dsa-item__index{font:500 11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dsw-alias-label-tertiary,#9a9a9a);letter-spacing:.04em;padding-top:3px}
+  .dsa-item__quote{margin:0 0 7px;padding:8px 10px;border-left:2px solid color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 55%,transparent);border-radius:0 7px 7px 0;
+  background:color-mix(in srgb,var(--dsw-alias-bg-layer-2,rgba(0,0,0,.045)) 75%,transparent);color:var(--dsw-alias-label-secondary,#4a4a4a);
+  font-size:12px;line-height:1.62;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .dsa-item__meta{display:flex;align-items:baseline;gap:6px;margin-bottom:6px;font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dsw-alias-label-tertiary,#8f8f8f);min-width:0}
+  .dsa-item__where{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dsa-item__when{flex:0 0 auto;white-space:nowrap}
+  .dsa-item__turn{font-weight:600;color:var(--dsw-alias-label-secondary,#6b6b6b)}
+  .dsa-item__comment{font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--dsw-alias-label-primary,#111)}
+  .dsa-item__label{display:block;margin-bottom:2px;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dsw-alias-label-tertiary,#9a9a9a)}
+  .dsa-item__tools{display:flex;align-items:center;gap:1px;margin-left:auto;padding-left:4px;opacity:0;transition:opacity .12s ease}
+  .dsa-item:hover .dsa-item__tools,.dsa-item:focus-within .dsa-item__tools{opacity:1}
+  .dsa-icon{display:grid;place-items:center;width:24px;height:24px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--dsw-alias-label-tertiary,#8f8f8f);cursor:pointer;transition:background-color .12s ease,color .12s ease}
+  .dsa-icon:hover{background:var(--dsw-alias-bg-layer-3,rgba(0,0,0,.07));color:var(--dsw-alias-label-primary,#111)}
+  .dsa-icon--danger:hover{background:color-mix(in srgb,var(--dsw-alias-state-error-primary,#c0392b) 10%,transparent);color:var(--dsw-alias-state-error-primary,#c0392b)}
+  .dsa-dialog{position:absolute;z-index:2147483001;width:min(368px,calc(100vw - 24px));padding:14px;border-radius:14px;
+  background:var(--dsw-alias-bg-overlay,#fff);color:var(--dsw-alias-label-primary,#111);border:1px solid var(--dsw-alias-border-l1,rgba(0,0,0,.1));
+  box-shadow:0 1px 2px rgba(15,18,26,.06),0 20px 52px rgba(15,18,26,.22);animation:dsa-in .16s cubic-bezier(.2,.8,.2,1);
+  font:13px/1.5 var(--dsw-font-family,system-ui)}
+  .dsa-dialog__head{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-weight:600;font-size:12.5px}
+  .dsa-dialog__head svg{color:var(--dsw-alias-brand-primary,#3b6ef2)}
+  .dsa-dialog__quote{margin:0 0 8px;padding:8px 10px;border-left:2px solid color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 55%,transparent);border-radius:0 7px 7px 0;
+  background:color-mix(in srgb,var(--dsw-alias-bg-layer-2,rgba(0,0,0,.045)) 75%,transparent);color:var(--dsw-alias-label-secondary,#4a4a4a);
+  font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:88px;overflow:auto}
+  .dsa-dialog__meta{margin-bottom:10px;font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dsw-alias-label-tertiary,#8f8f8f)}
+  .dsa-dialog__area{width:100%;box-sizing:border-box;min-height:76px;resize:vertical;padding:9px 10px;border-radius:10px;
+  border:1px solid var(--dsw-alias-border-l2,rgba(0,0,0,.16));background:var(--dsw-alias-bg-layer-1,#fff);color:inherit;font:inherit;outline:none;
+  transition:border-color .14s ease,box-shadow .14s ease}
+  .dsa-dialog__area::placeholder{color:var(--dsw-alias-label-tertiary,#a0a0a0)}
+  .dsa-dialog__area:focus{border-color:var(--dsw-alias-brand-primary,#3b6ef2);box-shadow:0 0 0 3px color-mix(in srgb,var(--dsw-alias-brand-primary,#3b6ef2) 15%,transparent)}
+  .dsa-dialog__row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:11px}
+  .dsa-dialog__hint{margin-right:auto;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dsw-alias-label-tertiary,#a0a0a0)}
+  .dsa-btn{padding:6px 13px;border-radius:9px;border:1px solid transparent;cursor:pointer;font:500 12.5px/1.2 var(--dsw-font-family,system-ui);transition:background-color .12s ease,border-color .12s ease,filter .12s ease}
+  .dsa-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#3b6ef2);outline-offset:2px}
+  .dsa-btn--ghost{background:transparent;border-color:var(--dsw-alias-border-l1,rgba(0,0,0,.12));color:var(--dsw-alias-label-secondary,#555)}
+  .dsa-btn--ghost:hover{background:var(--dsw-alias-bg-layer-2,rgba(0,0,0,.05))}
+  .dsa-btn--primary{background:var(--dsw-alias-button-primary-fill,var(--dsw-alias-brand-primary,#3b6ef2));color:var(--dsw-alias-label-primary-inverted,#fff)}
+  .dsa-btn--primary:not(:disabled):hover{background:var(--dsw-alias-button-primary-hover,var(--dsw-alias-brand-primary,#3b6ef2))}
+  .dsa-btn--primary:disabled{opacity:.45;cursor:not-allowed}
+  .dsa-error{margin-left:6px;font-size:12px;color:var(--dsw-alias-state-error-primary,#c0392b)}
+  @keyframes dsa-in{from{opacity:0;transform:translateY(4px) scale(.995)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.dsa-pill,.dsa-pop,.dsa-dialog{animation:none;transition:none}}
+    .dsa-pill,.dsa-pop,.dsa-dialog{animation:none}
+</style></head><body>
+
+<div class="card" style="height:250px">
+  <div class="cap">01 · 选区浮层</div>
+  <div class="code">const waitFor = async (fn, timeout = 2000) =&gt; {
+  const started = Date.now()
+  while (<mark>Date.now() - started &lt; timeout</mark>) {
+    const value = fn()
+    if (value) return value
+  }
+}</div>
+  <button class="dsa-pill" style="left:14px;top:200px"><span class="dsa-pill__plus">+</span><span class="dsa-pill__label">添加注释</span></button>
+</div>
+
+<div class="card">
+  <div class="cap">02 · 输入框工具栏</div>
+  <div class="composer">
+    <span class="round">+</span><span class="ph">发消息或创建任务…</span>
+    <button class="dsa-chip" aria-expanded="false">
+      <span class="dsa-chip__note"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 4.4a1 1 0 0 1 1-1h6.8a1 1 0 0 1 1 1v4.3L9.2 13H4.6a1 1 0 0 1-1-1z M9.3 13.1V10a1 1 0 0 1 1-1h3"/></svg></span><span class="dsa-chip__count">2</span><span class="dsa-chip__sep"></span><span class="dsa-chip__label"> 条注释</span>
+    </button>
+    <button class="dsa-chip" aria-expanded="true">
+      <span class="dsa-chip__note"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 4.4a1 1 0 0 1 1-1h6.8a1 1 0 0 1 1 1v4.3L9.2 13H4.6a1 1 0 0 1-1-1z M9.3 13.1V10a1 1 0 0 1 1-1h3"/></svg></span><span class="dsa-chip__count">5</span><span class="dsa-chip__sep"></span><span class="dsa-chip__label"> 条注释</span>
+    </button>
+  </div>
+</div>
+
+<div class="card" style="height:400px">
+  <div class="cap">03 · 悬停展开</div>
+  <div class="dsa-pop" style="left:18px;top:44px">
+    <div class="dsa-pop__head"><span class="dsa-pop__dot"></span><span class="dsa-pop__title">注释</span><span class="dsa-pop__badge">2</span><span class="dsa-pop__hint">随下一条消息发送</span></div>
+    <div class="dsa-pop__list">
+      <div class="dsa-item">
+        <span class="dsa-item__index">01</span>
+        <div style="min-width:0">
+          <div class="dsa-item__quote">Date.now() - started &lt; timeout</div>
+          <div class="dsa-item__meta">
+            <span class="dsa-item__where">第 14 轮回答</span><span>·</span><span class="dsa-item__when">2 分钟前</span>
+            <div class="dsa-item__tools" style="opacity:1">
+              <button class="dsa-icon" aria-label="编辑注释"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11.1 2.7a1.2 1.2 0 0 1 1.7 0l.5.5a1.2 1.2 0 0 1 0 1.7L6.1 12.5l-2.7.7.7-2.7z"/></svg></button>
+              <button class="dsa-icon dsa-icon--danger" aria-label="删除注释"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 4.6h9.2 M6.2 4.6v-.9a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v.9 M5.1 4.6l.4 7.6a1 1 0 0 0 1 .95h3a1 1 0 0 0 1-.95l.4-7.6"/></svg></button>
+            </div>
+          </div>
+          <div><span class="dsa-item__label">用户评论</span><div class="dsa-item__comment">这里改成轮询等待，别用固定 sleep。</div></div>
+        </div>
+      </div>
+      <div class="dsa-item">
+        <span class="dsa-item__index">02</span>
+        <div style="min-width:0">
+          <div class="dsa-item__quote">plugins/dsh-annotation-rewind-scroll/client.js 第 481 行</div>
+          <div class="dsa-item__meta">
+            <span class="dsa-item__where">文件 plugins/dsh-annotation-rewind-scroll/client.js 第 481 行</span><span>·</span><span class="dsa-item__when">1 小时前</span>
+            <div class="dsa-item__tools">
+              <button class="dsa-icon" aria-label="编辑注释"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11.1 2.7a1.2 1.2 0 0 1 1.7 0l.5.5a1.2 1.2 0 0 1 0 1.7L6.1 12.5l-2.7.7.7-2.7z"/></svg></button>
+              <button class="dsa-icon dsa-icon--danger" aria-label="删除注释"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 4.6h9.2 M6.2 4.6v-.9a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v.9 M5.1 4.6l.4 7.6a1 1 0 0 0 1 .95h3a1 1 0 0 0 1-.95l.4-7.6"/></svg></button>
+            </div>
+          </div>
+          <div><span class="dsa-item__label">用户评论</span><div class="dsa-item__comment">这段注释写在文件里很合适。</div></div>
+        </div>
+      </div></div>
+  </div>
+</div>
+
+<div class="card mid">
+  <div class="cap">04 · 撰写</div>
+  <div class="dsa-dialog" style="left:18px;top:44px">
+    <div class="dsa-dialog__head"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 4.4a1 1 0 0 1 1-1h6.8a1 1 0 0 1 1 1v4.3L9.2 13H4.6a1 1 0 0 1-1-1z M9.3 13.1V10a1 1 0 0 1 1-1h3"/></svg><span>添加注释</span></div>
+    <div class="dsa-dialog__quote">Date.now() - started &lt; timeout</div>
+    <div class="dsa-dialog__meta">来源：第 14 轮回答</div>
+    <textarea class="dsa-dialog__area" placeholder="这条引用需要我怎么处理？">这里改成轮询等待</textarea>
+    <div class="dsa-dialog__row"><span class="dsa-dialog__hint">⌘ ↵</span><button class="dsa-btn dsa-btn--ghost">取消</button><button class="dsa-btn dsa-btn--primary">添加</button></div>
+  </div>
+</div>
+</body></html>

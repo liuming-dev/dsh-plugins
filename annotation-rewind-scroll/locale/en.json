@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Annotations, message editing and scrolling",
+    "description": "Annotate replies and documents; edit past user messages and rerun the conversation from that point. Use ↑/↓ or Page Up/Page Down to scroll between user messages in the chat, or recall past user inputs in the composer to edit and send."
+  }
+}
