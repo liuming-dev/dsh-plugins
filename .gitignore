@@ -1,1 +1,7 @@
 .idea
+node_modules/
+coverage/
+*.log
+__pycache__/
+cliproxyapi-plus/test/browser/harness.js
+docs/superpowers

@@ -1,0 +1,87 @@
+{
+  "name": "cliproxyapi-plus",
+  "version": "0.1.0",
+  "description": "Manage a local CLIProxyAPIPlus server, YAML configuration, Qoder and Codex credentials, live quota, and runtime logs.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./client.editor.js": "./client.editor.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "client.editor.js",
+    "contract.js",
+    "config-file.js",
+    "auth.js",
+    "authentication.js",
+    "codex-quota.js",
+    "process-manager.js",
+    "service.js",
+    "management-credentials.js",
+    "management-api.js",
+    "credential-data.js",
+    "quota.js",
+    "metrics.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "preview/*.png"
+  ],
+  "dependencies": {
+    "@codemirror/lang-yaml": "^6.1.2",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.38.6",
+    "@deepseek-ai/schemastery": "~3.19.0",
+    "@lezer/highlight": "^1.2.1",
+    "codemirror": "^6.0.2",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": []
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuming-dev/dsh-plugins.git",
+    "directory": "cliproxyapi-plus"
+  },
+  "homepage": "https://github.com/liuming-dev/dsh-plugins/tree/main/cliproxyapi-plus#readme",
+  "scripts": {
+    "test": "node --test --experimental-test-coverage test/*.test.mjs",
+    "test:e2e": "python3 test/e2e.py",
+    "test:browser": "node scripts/build-client.mjs && node scripts/build-browser-test.mjs && node test/browser/cursor-codemirror.mjs && node test/browser/dashboard-browser.mjs && node test/browser/settings-browser.mjs && node test/browser/codex-browser.mjs",
+    "build": "node scripts/build-client.mjs",
+    "check": "node --check index.js && node --check client.js && node --check service.js && node --check process-manager.js && node --check metrics.js && node --check management-credentials.js && node --check management-api.js && node --check credential-data.js && node --check quota.js && node --check codex-quota.js && node --check authentication.js",
+    "pack:check": "npm pack --dry-run",
+    "prepack": "node scripts/build-client.mjs"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "cliproxyapi",
+    "qoder",
+    "codex",
+    "yaml"
+  ]
+}

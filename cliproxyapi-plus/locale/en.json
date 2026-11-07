@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "CLI Proxy",
+    "description": "A native CLI Proxy API console with request trends, credential models and quota, file details, YAML configuration, and runtime logs."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "CLI Proxy",
+    "description": "原生 CLI Proxy API 控制台，提供请求趋势、凭证模型与额度、文件详情、YAML 配置和运行日志。"
+  }
+}

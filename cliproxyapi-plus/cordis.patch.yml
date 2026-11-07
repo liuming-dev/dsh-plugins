@@ -1,0 +1,9 @@
+- insert:
+    - id: cliproxyapi-plus
+      name: 'cliproxyapi-plus'
+      config:
+        configPath: ''
+        startCommand: ''
+        authCommand: ''
+        managementUrl: ''
+        autoStart: false
