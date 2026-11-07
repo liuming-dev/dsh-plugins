@@ -33,6 +33,7 @@ const adapter=new Adapter(),ctx=new Context()
 const plugin=name=>require(`@deepseek-ai/${name}`).default
 try{
  for(const name of ['dsh-llm','dsh-session','dsh-session-projection','dsh-system-prompt','dsh-tools','dsh-agent'])await ctx.plugin(plugin(name))
+ await ctx.plugin(require('@deepseek-ai/dsh-tool-executor-native'))
  await ctx.plugin(require('@deepseek-ai/dsh-session-persistence-jsonl'),{root})
  await ctx.plugin(plugin('dsh-agent-loop'),{agents:[]})
  ctx.llm.registerAdapter(['mock'],adapter)

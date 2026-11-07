@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {fileURLToPath} from 'node:url'
 const root=fileURLToPath(new URL('..',import.meta.url)),output=mkdtempSync(join(tmpdir(),'dsh-plugin-tests-'))
-const suites=['submission','legacy-input','harness','dockkit','codemirror','edit-message','history-host','history-gateway','history-agent','history-keyboard','history-recall','annotation-geometry']
+const suites=['submission','legacy-input','harness','dockkit','codemirror','edit-message','history-host','history-gateway','history-agent','history-keyboard','history-recall','history-caret-e2e','annotation-geometry']
 const results=[]
 for(const name of suites){
  const result=spawnSync(process.execPath,[join(root,'test',name+'.mjs')],{cwd:root,encoding:'utf8',timeout:60000})

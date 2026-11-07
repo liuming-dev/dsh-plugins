@@ -1,6 +1,6 @@
 # 发布到公共 npm
 
-正式包名为 `dsh-annotation-rewind-scroll`。包的前端模块、bundle 与协议身份已同步；`publishConfig` 显式指向公共 npm，避免使用本机默认的其他镜像。当前版本为 `0.1.0`。
+正式包名为 `dsh-annotation-rewind-scroll`。包的前端模块、bundle 与协议身份已同步；`publishConfig` 显式指向公共 npm，避免使用本机默认的其他镜像。当前版本为 `0.2.1`。
 
 ## 首次发布
 

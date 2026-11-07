@@ -24,6 +24,32 @@ window.__ModuleLoader__.load({
     const editable = element => element && element.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"],.cm-editor,[role="dialog"]')
     const sleep = ms => new Promise(resolve => window.setTimeout(resolve, ms))
 
+    function atComposerEdge(composer, direction) {
+      const selection = window.getSelection()
+      if (document.activeElement !== composer || selection?.rangeCount !== 1 || !selection.isCollapsed) return false
+      const range = selection.getRangeAt(0)
+      let node = range.startContainer
+      if (!composer.contains(node)) return false
+      // A terminal br is the editor's empty-line placeholder. Other breaks,
+      // paragraphs and reference chips are real content, even without text.
+      const ignorable = node => node.nodeType === Node.TEXT_NODE ? !node.textContent : node.nodeName === 'BR' && !node.nextSibling
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (range.startOffset !== (direction < 0 ? 0 : node.length)) return false
+      } else {
+        const children = [...node.childNodes]
+        const remaining = direction < 0 ? children.slice(0, range.startOffset) : children.slice(range.startOffset)
+        if (remaining.some(child => !ignorable(child))) return false
+      }
+      while (node !== composer) {
+        for (let sibling = direction < 0 ? node.previousSibling : node.nextSibling; sibling;
+          sibling = direction < 0 ? sibling.previousSibling : sibling.nextSibling) {
+          if (!ignorable(sibling)) return false
+        }
+        node = node.parentNode
+      }
+      return true
+    }
+
     async function installHistory(ctx, bridge) {
       const unmountRemote = await ctx.remote.$mount(REMOTE)
       let stopped = false, sessionId, session, unsubscribe, generation = 0
@@ -143,7 +169,7 @@ window.__ModuleLoader__.load({
         })
       }
 
-      async function recall(direction, input) {
+      async function recall(direction, input, composer) {
         if (recalling || stopped || !sessionId) return false
         recalling = true
         const activeGeneration = generation
@@ -152,6 +178,7 @@ window.__ModuleLoader__.load({
         const unchanged = () => !stopped && generation === activeGeneration
           && input.state.getSnapshot().draftRev === before.draftRev
           && input.state.getSnapshot().phase === 'plain'
+          && atComposerEdge(composer, direction)
         try {
           const items = await messages()
           if (!items.length || !unchanged()) return false
@@ -204,8 +231,9 @@ window.__ModuleLoader__.load({
             || document.querySelector('[role="listbox"], [role="menu"]')) return
           const input = composerInput()
           if (!input || input.state.getSnapshot().phase !== 'plain') return
+          if (event.repeat || !atComposerEdge(composer, direction)) return
           event.preventDefault()
-          void recall(direction, input).catch(error => input.notify('error', t('history.error.load', error.message)))
+          void recall(direction, input, composer).catch(error => input.notify('error', t('history.error.load', error.message)))
           return
         }
         if (editable(target)) return

@@ -1,7 +1,7 @@
 {
   "name": "dsh-annotation-rewind-scroll",
-  "version": "0.1.0",
-  "description": "Annotate replies and documents; edit past user messages and rerun the conversation from that point. Use ↑/↓ or Page Up/Page Down to scroll between user messages in the chat, or recall past user inputs in the composer to edit and send.",
+  "version": "0.2.1",
+  "description": "Annotate replies and documents; edit past user messages and rerun from that point. Use ↑/↓ or Page Up/Page Down to browse user messages, or recall inputs at the composer's text boundaries; elsewhere, edit normally.",
   "type": "module",
   "exports": {
     ".": "./index.js",
