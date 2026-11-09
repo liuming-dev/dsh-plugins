@@ -1,6 +1,6 @@
 {
   "name": "cliproxyapi-plus",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Manage a local CLIProxyAPIPlus server, YAML configuration, Qoder and Codex credentials, live quota, and runtime logs.",
   "type": "module",
   "exports": {
@@ -30,7 +30,9 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "preview/*.png"
+    "preview/*.png",
+    "harness-providers.js",
+    "provider-sync.js"
   ],
   "dependencies": {
     "@codemirror/lang-yaml": "^6.1.2",
@@ -72,7 +74,7 @@
     "test:e2e": "python3 test/e2e.py",
     "test:browser": "node scripts/build-client.mjs && node scripts/build-browser-test.mjs && node test/browser/cursor-codemirror.mjs && node test/browser/dashboard-browser.mjs && node test/browser/settings-browser.mjs && node test/browser/codex-browser.mjs",
     "build": "node scripts/build-client.mjs",
-    "check": "node --check index.js && node --check client.js && node --check service.js && node --check process-manager.js && node --check metrics.js && node --check management-credentials.js && node --check management-api.js && node --check credential-data.js && node --check quota.js && node --check codex-quota.js && node --check authentication.js",
+    "check": "node --check index.js && node --check client.js && node --check service.js && node --check process-manager.js && node --check metrics.js && node --check management-credentials.js && node --check management-api.js && node --check credential-data.js && node --check quota.js && node --check codex-quota.js && node --check authentication.js && node --check harness-providers.js && node --check provider-sync.js",
     "pack:check": "npm pack --dry-run",
     "prepack": "node scripts/build-client.mjs"
   },

@@ -47,7 +47,7 @@ test('save and validation requests reject unsupported fields and oversized value
 
 test('remote descriptors contain no Agent dependency and share client shape', () => {
   const descriptors = remoteDescriptors()
-  assert.equal(descriptors.length, 15)
+  assert.equal(descriptors.length, 16)
   assert.equal(new Set(descriptors.map(item => item.id)).size, descriptors.length)
   assert.ok(descriptors.every(item => item.invocation.kind === 'direct'))
   assert.ok(descriptors.every(item => !item.parameters.some(parameter => parameter.source === 'lookup')))

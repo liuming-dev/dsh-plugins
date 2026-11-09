@@ -43,6 +43,16 @@ Configuration path and start command default to empty; no authentication CLI cli
 
 The optional official-panel URL is editable in the same section. Legacy `authCommand` settings with recognized `--qoder-login` or `--codex-login` flags infer the initial selections until `authClients` is saved explicitly. The old arbitrary authentication command is no longer executed; login commands always derive from `startCommand`. Saving plugin settings reloads the plugin and stops plugin-owned processes. Nothing starts automatically unless `autoStart` is explicitly enabled in the plugin configuration. An externally managed server is shown as connected and its port is reserved from the panel's start action.
 
+## Automatic model providers
+
+CLI Proxy creates `qoder` (Qoder) and `codex` (Codex) providers from the proxy's usable credentials and fills their model lists. Models from multiple accounts of the same client are combined and deduplicated using the proxy's route IDs. Qoder uses OpenAI Chat Completions and Codex uses OpenAI Responses through the configured proxy.
+
+In **Configuration → Model provider sync**, choose periodic or one-time sync, change the check interval, or select **Sync now**. Periodic sync runs in the Host every 5 minutes by default, including while the panel is closed. Starting the proxy and completing authentication also trigger periodic-mode sync. One-time mode runs once on each plugin activation, with up to 30 seconds of cold-start readiness retries. Later retries are available through **Sync now**. The `modelSyncIntervalMinutes` setting accepts whole minutes from 1 to 35791, or `0` for one-time mode.
+
+The proxy address comes from YAML. The first non-empty client API key in `access.api-keys` (or the legacy `api-keys` list) is validated and saved through Harness Credentials. A missing key is reported in the sync status. Providers and credential references persist in the current Profile. Existing `qoder` and `codex` provider configurations are overwritten. Connection, authentication, model-query, and partial-account failures retain the last successful configuration for the affected client. The authentication-client checkboxes continue to control login commands.
+
+The Host agent tool supports `sync_providers` for the same manual synchronization. A writable Profile and the standard `settings`, `credentials`, and `llm-pi-ai` services are required for provider sync.
+
 ## Install
 
 In the Harness Plugin Manager, install the npm package [`cliproxyapi-plus`](https://www.npmjs.com/package/cliproxyapi-plus) and enable it. For local development, select the package directory from this repository.

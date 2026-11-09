@@ -3,6 +3,8 @@ import { scanAuth } from './auth.js'
 import { authenticationClients } from './authentication.js'
 import { ProcessManager } from './process-manager.js'
 import { ManagementCredentials } from './management-credentials.js'
+import { fetchManagementJson } from './management-api.js'
+import { ProviderSync } from './provider-sync.js'
 import { fetchDashboard } from './metrics.js'
 import { fetchCredentialDetails, fetchCredentialModels, fetchCredentialQuota } from './credential-data.js'
 import { errorPayload, parseCredentialFileRequest, parseCredentialRequest, parseSaveRequest, parseSettingsPatch, parseValidateRequest, PluginError, resolveSettings } from './contract.js'
@@ -34,7 +36,8 @@ export class CliproxyService {
     this.fetchProbe = fetchProbe
     this.dashboardLoader = dashboardLoader
     this.management = new ManagementCredentials(credentials)
-    this.processes = new ProcessManager(subprocess)
+    this.providerSync = new ProviderSync({ getSettings: () => this.settings(), loadContext: signal => this.providerContext(signal) })
+    this.processes = new ProcessManager(subprocess, { onAuthenticated: () => this.providerSync.trigger('authentication') })
     this.quotaCache = new Map()
   }
 
@@ -94,11 +97,25 @@ export class CliproxyService {
       health,
       processes: this.processes.snapshot(),
       generatedAt: Date.now(),
+      providerSync: this.providerSync.snapshot(),
     }
   }
 
   async readConfig() {
     return this.file().read()
+  }
+
+  async providerContext(signal) {
+    const file = await this.file().read()
+    const config = parseYaml(file.text)
+    const keys = config.access?.['api-keys'] ?? config['api-keys']
+    const apiKey = Array.isArray(keys) ? keys.find(key => typeof key === 'string' && key.trim())?.trim() : undefined
+    if (!apiKey) throw new PluginError('proxy-key-missing', '请在代理 YAML 的 access.api-keys 中配置客户端访问密钥。')
+    const password = await this.management.read()
+    if (!password) throw new PluginError('management-key-missing', '请先配置代理管理密码。')
+    const payload = await fetchManagementJson(file.server.baseUrl, password, 'credentials', { signal })
+    if (!Array.isArray(payload?.files)) throw new PluginError('invalid-credentials', '管理接口返回的凭证列表无效。')
+    return { baseUrl: file.server.baseUrl, apiKey, password, credentials: payload.files }
   }
 
   async validateConfig(request) {
@@ -176,7 +193,9 @@ export class CliproxyService {
 
   async start() {
     const password = await this.management.ensure()
-    return this.processes.start(this.settings(), password)
+    const result = await this.processes.start(this.settings(), password)
+    this.providerSync.trigger('start')
+    return result
   }
 
   async stop() {
@@ -201,6 +220,7 @@ export class CliproxyService {
   }
 
   async dispose() {
+    await this.providerSync.detach()
     await this.processes.dispose()
   }
 
@@ -215,6 +235,7 @@ export class CliproxyService {
       case 'stop': return this.stop()
       case 'authenticate': return this.authenticate()
       case 'stop_authentication': return this.stopAuthentication()
+      case 'sync_providers': return this.providerSync.sync()
       default: throw new PluginError('invalid-action', `不支持的操作：${action}`)
     }
   }

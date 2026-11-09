@@ -13,6 +13,7 @@ async function harness() {
   const subprocess = new FakeSubprocess()
   let tool, remoteContribution, cleanup, toolDisposed = false, remoteDisposed = false
   const ctx = {
+    inject: () => {},
     fiber: { entry: 'entry-id' },
     loader: { import: async name => {
       assert.equal(name, '@deepseek-ai/dsh-typert-protocol')
@@ -35,7 +36,7 @@ test('plugin declares config, dependencies, remote API, and one shared agent too
   const { tool, remoteContribution } = await harness()
   assert.equal(tool.name, 'cliproxyapi_plus')
   assert.equal(remoteContribution.package, 'cliproxyapi-plus')
-  assert.equal(remoteContribution.invocations.length, 15)
+  assert.equal(remoteContribution.invocations.length, 16)
   assert.equal(tool.parameters.required[0], 'action')
   assert.equal(tool.isConcurrencySafe({ action: 'snapshot' }), true)
   assert.equal(tool.isConcurrencySafe({ action: 'start' }), false)

@@ -29,7 +29,8 @@ function publicRecord(record) {
 }
 
 export class ProcessManager {
-  constructor(subprocess) {
+  constructor(subprocess, { onAuthenticated = () => {} } = {}) {
+    this.onAuthenticated = onAuthenticated
     if (!subprocess) throw new Error('CLIProxyAPI Plus requires the subprocess service')
     this.subprocess = subprocess
     this.service = undefined
@@ -175,6 +176,7 @@ export class ProcessManager {
       appendLog(record, `\n[process exited: code=${outcome.exitCode ?? 'null'}, signal=${outcome.signal ?? 'none'}]\n`)
       record.exitCode = outcome.exitCode
       record.signal = outcome.signal
+      if (!record.cancelled && outcome.exitCode === 0) this.onAuthenticated()
       if (record.cancelled || outcome.exitCode !== 0 || record.step === record.commands.length) {
         record.status = record.cancelled || outcome.exitCode === 0 ? 'exited' : 'failed'
         record.endedAt = Date.now()

@@ -1,6 +1,7 @@
 import Schema from '@deepseek-ai/schemastery'
 import { CliproxyService } from './service.js'
-import { DEFAULT_AUTH_COMMAND, DEFAULT_CONFIG_PATH, DEFAULT_START_COMMAND, errorPayload, NAMESPACE, REMOTE, toLosslessJson } from './contract.js'
+import { HarnessProviders } from './harness-providers.js'
+import { DEFAULT_AUTH_COMMAND, DEFAULT_CONFIG_PATH, DEFAULT_START_COMMAND, errorPayload, MAX_SYNC_INTERVAL_MINUTES, NAMESPACE, REMOTE, toLosslessJson } from './contract.js'
 
 export const Config = Schema.object({
   configPath: Schema.string().default(DEFAULT_CONFIG_PATH),
@@ -10,11 +11,12 @@ export const Config = Schema.object({
   authClients: Schema.array(Schema.union(['qoder', 'codex'])).default(undefined),
   managementUrl: Schema.string().default(''),
   autoStart: Schema.boolean().default(false),
+  modelSyncIntervalMinutes: Schema.number().step(1).min(0).max(MAX_SYNC_INTERVAL_MINUTES).default(5),
 })
 
 export const inject = ['loader', 'typert', 'subprocess', 'tools', 'configEditor', 'credentials']
 
-const actions = ['snapshot', 'read_config', 'validate_config', 'save_config', 'update_settings', 'start', 'stop', 'authenticate', 'stop_authentication']
+const actions = ['snapshot', 'read_config', 'validate_config', 'save_config', 'update_settings', 'start', 'stop', 'authenticate', 'stop_authentication', 'sync_providers']
 
 function textContent(value) {
   return [{ type: 'text', text: typeof value === 'string' ? value : JSON.stringify(value, null, 2) }]
@@ -49,12 +51,13 @@ export async function apply(ctx, config = {}) {
     async credentialDetails(request, signal) { signal?.throwIfAborted(); return respond(() => service.credentialDetails(request, signal)) }
     async credentialQuota(request, signal) { signal?.throwIfAborted(); return respond(() => service.credentialQuota(request, signal)) }
     async refreshCredentialQuota(request, signal) { signal?.throwIfAborted(); return respond(() => service.refreshCredentialQuota(request, signal)) }
+    async syncProviders(signal) { signal?.throwIfAborted(); return respond(() => service.providerSync.sync()) }
   }
   new CliproxyRemote(ctx)
   const unregisterRemote = ctx.typert.register(REMOTE)
   const unregisterTool = ctx.tools.register({
     name: 'cliproxyapi_plus',
-    description: 'Manage the local CLIProxyAPIPlus server. Read or save its configured YAML file, update plugin settings, start/stop the server, and run/stop sequential Qoder and Codex authentication for selected clients that need sign-in. Uses the same operations as the CLI Proxy panel.',
+    description: 'Manage the local CLIProxyAPIPlus server. Read/save YAML, update settings, start/stop the server, authenticate selected Qoder/Codex clients, and sync their providers and models into Harness. Uses the same operations as the CLI Proxy panel.',
     parameters: {
       type: 'object',
       properties: {
@@ -88,6 +91,13 @@ export async function apply(ctx, config = {}) {
     await Promise.resolve(unregisterRemote?.())
     await service.dispose()
   }, 'cliproxyapi-plus cleanup')
+
+  // Model settings are optional so proxy management remains available on Hosts
+  // without a writable Profile or the generic model adapter.
+  ctx.inject(['settings', 'llm'], child => {
+    service.providerSync.attach(new HarnessProviders({ settings: child.settings, llm: child.llm, credentials: child.credentials }))
+    child.effect(() => () => service.providerSync.detach())
+  })
 
   if (service.settings().autoStart) {
     queueMicrotask(() => service.start().catch(error => console.error('[cliproxyapi-plus] auto start failed', error)))

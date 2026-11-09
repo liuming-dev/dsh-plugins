@@ -9,7 +9,7 @@ window.__ModuleLoader__.load({
     const NAMESPACE = 'cliproxyapiPlus'
     const codec = name => ({ mode: 'strict', typeSymbol: `cliproxyapi-plus#${name}`, create: () => ({ parse: value => value }) })
     const requestMethods = ['validateConfig', 'saveConfig', 'updateSettings', 'saveManagementCredential', 'credentialModels', 'credentialDetails', 'credentialQuota', 'refreshCredentialQuota']
-    const methods = ['snapshot', 'readConfig', 'validateConfig', 'saveConfig', 'updateSettings', 'start', 'stop', 'authenticate', 'stopAuthentication', 'saveManagementCredential', 'copyManagementCredential', 'credentialModels', 'credentialDetails', 'credentialQuota', 'refreshCredentialQuota']
+    const methods = ['snapshot', 'readConfig', 'validateConfig', 'saveConfig', 'updateSettings', 'start', 'stop', 'authenticate', 'stopAuthentication', 'saveManagementCredential', 'copyManagementCredential', 'credentialModels', 'credentialDetails', 'credentialQuota', 'refreshCredentialQuota', 'syncProviders']
     const CLIENT_REMOTE = {
       package: 'cliproxyapi-plus',
       descriptors: methods.map(method => ({
@@ -44,6 +44,12 @@ window.__ModuleLoader__.load({
       'overview.modified': '修改时间', 'overview.expires': '凭据有效期', 'overview.never': '未记录',
       'overview.localData': '本地数据 · 令牌已隐藏', 'overview.logPreview': '最近输出', 'overview.noLog': '启动服务后，输出会显示在这里。',
       'settings.title': '运行设置', 'settings.description': '路径和命令保存在当前 DSH Profile 中。修改设置会重载插件，并停止由插件启动的进程。',
+      'sync.title': '模型供应商同步', 'sync.description': '按可用凭证自动配置 Qoder、Codex 供应商与模型。同 ID 配置会被覆盖，连接失败时保留最近成功配置。',
+      'sync.mode': '同步模式', 'sync.periodic': '定期同步', 'sync.once': '一次性同步', 'sync.interval': '检查间隔（分钟）',
+      'sync.onceHint': '每次插件启用时同步一次，后续可手动同步。', 'sync.periodicHint': '在 Host 后台运行，页面关闭后仍会检查。保存设置后生效。',
+      'sync.now': '立即同步', 'sync.running': '正在同步…', 'sync.models': '个模型', 'sync.updated': '最近同步', 'sync.next': '下次检查',
+      'sync.idle': '等待同步', 'sync.synced': '已同步', 'sync.unchanged': '已是最新', 'sync.waiting': '等待可用凭证', 'sync.error': '同步失败',
+      'sync.unavailable': '等待 Harness 模型配置服务', 'sync.invalidInterval': '请输入 1 至 35791 的整数分钟。', 'sync.draft': '请先保存设置，再同步。',
       'settings.configPath': '配置文件路径', 'settings.startCommand': '启动命令', 'settings.authCommand': '认证命令',
       'settings.authClients': '认证 CLI 客户端', 'settings.authClientsHint': '仅认证所选客户端中未认证或已失效的客户端，按 Qoder、Codex 顺序执行。',
       'settings.authPreview': '查看生成的认证命令', 'settings.authPreviewEmpty': '选择客户端后显示对应的认证命令。',
@@ -134,6 +140,12 @@ window.__ModuleLoader__.load({
       'overview.modified': 'Modified', 'overview.expires': 'Credential expiry', 'overview.never': 'Not recorded',
       'overview.localData': 'Local data · tokens hidden', 'overview.logPreview': 'Recent output', 'overview.noLog': 'Server output will appear here after startup.',
       'settings.title': 'Runtime settings', 'settings.description': 'Paths and commands are saved in the current DSH Profile. Saving reloads the plugin and stops plugin-owned processes.',
+      'sync.title': 'Model provider sync', 'sync.description': 'Configure Qoder and Codex providers and models from usable credentials. Existing IDs are overwritten. Connection failures retain the last successful configuration.',
+      'sync.mode': 'Sync mode', 'sync.periodic': 'Periodic sync', 'sync.once': 'One-time sync', 'sync.interval': 'Check interval (minutes)',
+      'sync.onceHint': 'Sync once whenever the plugin is enabled. You can sync manually afterward.', 'sync.periodicHint': 'Runs in the Host background, including while this page is closed. Save settings to apply.',
+      'sync.now': 'Sync now', 'sync.running': 'Syncing…', 'sync.models': 'models', 'sync.updated': 'Last sync', 'sync.next': 'Next check',
+      'sync.idle': 'Waiting to sync', 'sync.synced': 'Synced', 'sync.unchanged': 'Up to date', 'sync.waiting': 'Waiting for credentials', 'sync.error': 'Sync failed',
+      'sync.unavailable': 'Waiting for Harness model settings', 'sync.invalidInterval': 'Enter a whole number from 1 to 35791 minutes.', 'sync.draft': 'Save settings before syncing.',
       'settings.configPath': 'Configuration path', 'settings.startCommand': 'Start command', 'settings.authCommand': 'Authentication command',
       'settings.authClients': 'Authentication CLI clients', 'settings.authClientsHint': 'Authenticate selected clients with missing or invalid credentials, in Qoder then Codex order.',
       'settings.authPreview': 'View generated authentication commands', 'settings.authPreviewEmpty': 'Select clients to preview their authentication commands.',
@@ -350,6 +362,41 @@ window.__ModuleLoader__.load({
               ])
             })),
         selected.length && command ? h('p', { key: 'hint' }, t(dirty ? 'settings.authPreviewDraft' : 'settings.authPreviewHint')) : null,
+      ])
+    }
+
+    function validSyncInterval(value) {
+      return Number.isInteger(value) && value >= 0 && value <= 35791
+    }
+
+    function ProviderSyncSettings({ settings, state, onChange, onSync, busy, dirty }) {
+      const interval = settings.modelSyncIntervalMinutes ?? 5
+      const periodic = interval !== 0
+      const valid = validSyncInterval(interval)
+      return h('section', { className: 'cpa-provider-sync', 'aria-labelledby': 'cpa-provider-sync-title' }, [
+        h('div', { key: 'head', className: 'cpa-provider-sync__head' }, [
+          h('h3', { key: 'title', id: 'cpa-provider-sync-title' }, t('sync.title')),
+          h(Button, { key: 'sync', icon: 'refresh', onClick: onSync, disabled: Boolean(busy) || dirty || state?.status === 'running', title: dirty ? t('sync.draft') : undefined }, t(state?.status === 'running' || busy === 'syncProviders' ? 'sync.running' : 'sync.now')),
+        ]),
+        h('p', { key: 'description', className: 'cpa-field__hint' }, t('sync.description')),
+        h('div', { key: 'controls', className: 'cpa-provider-sync__controls' }, [
+          h(Field, { key: 'mode', label: t('sync.mode') }, h('select', { value: periodic ? 'periodic' : 'once', disabled: Boolean(busy), onChange: event => onChange('modelSyncIntervalMinutes', event.target.value === 'once' ? 0 : 5) },
+            h('option', { value: 'periodic' }, t('sync.periodic')), h('option', { value: 'once' }, t('sync.once')))),
+          periodic ? h(Field, { key: 'interval', label: t('sync.interval') }, h('input', { type: 'number', min: 1, max: 35791, step: 1, value: interval, 'aria-invalid': !valid, disabled: Boolean(busy), onChange: event => onChange('modelSyncIntervalMinutes', event.target.value === '' ? '' : Number(event.target.value)) })) : null,
+        ]),
+        h('p', { key: 'hint', className: 'cpa-field__hint', role: valid ? undefined : 'alert' }, t(!valid ? 'sync.invalidInterval' : periodic ? 'sync.periodicHint' : 'sync.onceHint')),
+        h('div', { key: 'results', className: 'cpa-provider-sync__results', 'aria-live': 'polite' }, ['qoder', 'codex'].map(id => {
+          const result = state?.providers?.[id]
+          return h('div', { key: id, className: 'cpa-provider-sync__result' }, [
+            h('div', { key: 'summary', className: 'cpa-provider-sync__summary' }, h('strong', null, id === 'qoder' ? 'Qoder' : 'Codex'), h('span', null, `${result?.modelCount || 0} ${t('sync.models')}`),
+              h('span', { className: result?.status === 'error' ? 'cpa-danger' : 'cpa-muted' }, t(`sync.${result?.status || 'idle'}`))),
+            result?.lastSuccessAt ? h('small', { key: 'time' }, `${t('sync.updated')} ${formatTime(result.lastSuccessAt)}`) : null,
+            result?.message ? h('small', { key: 'error' }, result.code === 'no-credentials' ? t('sync.waiting') : result.message) : null,
+          ])
+        })),
+        state?.status === 'unavailable' ? h('p', { key: 'unavailable', className: 'cpa-field__hint' }, t('sync.unavailable')) : null,
+        state?.message && state.status !== 'unavailable' ? h('p', { key: 'error', role: 'alert', className: 'cpa-field__hint' }, state.message) : null,
+        state?.nextCheckAt ? h('p', { key: 'next', className: 'cpa-field__hint' }, `${t('sync.next')} ${formatTime(state.nextCheckAt)}`) : null,
       ])
     }
 
@@ -823,7 +870,7 @@ window.__ModuleLoader__.load({
       const changeSetting = (key, value) => {
         const next = { ...settings, [key]: value }
         const saved = snapshot.settings
-        const fieldsChanged = ['configPath', 'startCommand', 'managementUrl'].some(field => next[field] !== saved[field])
+        const fieldsChanged = ['configPath', 'startCommand', 'managementUrl', 'modelSyncIntervalMinutes'].some(field => next[field] !== saved[field])
         const clientsChanged = ['qoder', 'codex'].some(client => (next.authClients || []).includes(client) !== (saved.authClients || []).includes(client))
         setSettings(next); setSettingsDirty(fieldsChanged || clientsChanged)
         setNotice(''); setSettingsFeedback('')
@@ -925,7 +972,7 @@ window.__ModuleLoader__.load({
               h('span', { className: `cpa-settings-feedback ${settingsFeedback ? `is-${settingsFeedback.kind}` : ''}`,
                 role: settingsFeedback?.kind === 'error' ? 'alert' : 'status' },
               busy === 'settings' ? '' : settingsFeedback ? settingsFeedback.text : settingsDirty ? t('settings.dirty') : ''),
-              h(Button, { icon: 'check', primary: true, disabled: !settingsDirty || Boolean(busy), onClick: saveSettings },
+              h(Button, { icon: 'check', primary: true, disabled: !settingsDirty || Boolean(busy) || !validSyncInterval(settings.modelSyncIntervalMinutes ?? 5), onClick: saveSettings },
                 t(busy === 'settings' ? 'settings.saving' : 'action.saveSettings')))),
           h('div', { key: 'fields', className: 'cpa-fields' }, [
             h(Field, { key: 'path', label: t('settings.configPath') }, h('input', { value: settings.configPath || '', placeholder: t('settings.configPathPlaceholder'), onChange: event => changeSetting('configPath', event.target.value), disabled: busy === 'settings', spellCheck: false })),
@@ -941,6 +988,8 @@ window.__ModuleLoader__.load({
                 clients: settings.configPath.trim() === configPath ? snapshot?.auth?.clients : [] }),
             ]),
             h(Field, { key: 'url', label: t('settings.managementUrl'), hint: t('settings.managementHint') }, h('input', { value: settings.managementUrl || '', onChange: event => changeSetting('managementUrl', event.target.value), placeholder: 'http://127.0.0.1:8317/management.html', disabled: busy === 'settings', spellCheck: false })),
+            h(ProviderSyncSettings, { key: 'sync', settings, state: snapshot?.providerSync, onChange: changeSetting, dirty: settingsDirty, busy,
+              onSync: async () => { setBusy('syncProviders'); try { await call('syncProviders'); await refresh(true) } catch (cause) { setError(cause.message) } finally { setBusy('') } } }),
           ]),
         ]),
         h('section', { key: 'editor', className: 'cpa-panel cpa-editor-panel' }, [
@@ -1177,6 +1226,17 @@ window.__ModuleLoader__.load({
       .cpa-settings-feedback.is-success { color: var(--dsw-alias-state-success-primary); }
       .cpa-settings-feedback.is-error { color: var(--dsw-alias-state-error-primary); }
       .cpa-auth-clients { min-width: 0; margin: 0; padding: 0; border: 0; }
+      .cpa-provider-sync { padding-top: 22px; border-top: 1px solid var(--dsw-alias-border-l1); }
+      .cpa-provider-sync__head, .cpa-provider-sync__summary { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .cpa-provider-sync__head { justify-content: space-between; }
+      .cpa-provider-sync__head h3 { margin: 0; font-size: 14px; font-weight: 600; }
+      .cpa-provider-sync__controls { display: grid; grid-template-columns: repeat(2, minmax(0, 240px)); gap: 16px; margin-top: 18px; }
+      .cpa-provider-sync__results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; margin-top: 18px; }
+      .cpa-provider-sync__result { border: 1px solid var(--dsw-alias-border-l1); border-radius: 8px; padding: 14px; min-width: 0; }
+      .cpa-provider-sync__summary { font-size: 12px; }
+      .cpa-provider-sync .cpa-danger { color: var(--dsw-alias-state-error-primary); }
+      .cpa-provider-sync__summary strong { font-size: 13px; margin-right: auto; }
+      .cpa-provider-sync__result small { display: block; margin-top: 8px; overflow-wrap: anywhere; color: var(--dsw-alias-label-secondary); }
       .cpa-auth-clients legend { padding: 0; margin-bottom: 8px; }
       .cpa-client-choices { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 8px -8px; }
       .cpa-client-choices label { display: inline-flex; align-items: center; gap: 7px; padding: 4px 8px; border-radius: 5px; font-size: 12px; cursor: pointer; }
@@ -1194,7 +1254,8 @@ window.__ModuleLoader__.load({
       .cpa-command-preview code { display: block; color: var(--dsw-alias-label-primary); white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.7 var(--cpa-code); }
       .cpa-field__label { font-size: 12px; font-weight: 500; }
       .cpa-field__hint { font-size: 11px; color: var(--dsw-alias-label-secondary); }
-      .cpa-field input, .cpa-field textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 7px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); font: 12px/1.6 var(--cpa-code); resize: vertical; }
+      .cpa-field input, .cpa-field textarea, .cpa-field select { width: 100%; padding: 8px 10px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 7px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); font: 12px/1.6 var(--cpa-code); resize: vertical; }
+      .cpa-provider-sync select { min-height: 37px; font-family: var(--dsw-font-family); }
       .cpa-field .cpa-start-command { min-height: 34px; max-height: 320px; resize: none; overflow-y: auto; }
       .cpa-path { display: block; margin-top: 8px; color: var(--dsw-alias-label-secondary); font-size: 11px; overflow-wrap: anywhere; }
       .cpa-editor-panel__head { align-items: center; }

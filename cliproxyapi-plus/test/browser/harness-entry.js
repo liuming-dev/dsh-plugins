@@ -70,6 +70,7 @@ const settings = {
   authClients: ['qoder'],
   managementUrl: '',
   autoStart: false,
+  modelSyncIntervalMinutes: 5,
 }
 if (emptySettings) {
   Object.assign(settings, { configPath: '', startCommand: '', authCommand: '', authClients: [] }, JSON.parse(localStorage.getItem('cliproxy-test-settings') || '{}'))
@@ -81,7 +82,9 @@ if (parameters.has('codex')) {
   dashboard.credentials.push({ ...dashboard.credentials[0], id: 'credential-2', name: 'codex-user.json', type: 'codex', provider: 'codex', email: 'codex@example.com', usage: null })
 }
 window.__testReadConfigCalls = []
+const providerSync = { status: 'success', providers: { qoder: { status: 'synced', modelCount: 2, lastSuccessAt: Date.now() }, codex: { status: 'waiting', modelCount: 0 } } }
 const snapshot = () => ({
+  providerSync,
   ok: true,
   settings,
   config: settings.configPath ? { ok: true, path: settings.configPath, mtimeMs: documentVersion, size: yaml.length, server: {
@@ -96,6 +99,12 @@ const snapshot = () => ({
   generatedAt: Date.now(),
 })
 const remote = {
+  async syncProviders() {
+    window.__testSyncCalls = (window.__testSyncCalls || 0) + 1
+    if (window.__testSyncFailure) { providerSync.status = 'error'; providerSync.message = 'Proxy unavailable. Last configuration retained.' }
+    else { providerSync.status = 'success'; providerSync.message = ''; providerSync.providers.qoder = { status: 'unchanged', modelCount: 2, lastSuccessAt: Date.now() } }
+    return { ok: true, value: providerSync }
+  },
   async snapshot() { return { ok: true, value: snapshot() } },
   async readConfig() {
     window.__testReadConfigCalls.push(settings.configPath)

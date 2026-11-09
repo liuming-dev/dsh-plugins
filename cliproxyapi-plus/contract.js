@@ -5,6 +5,10 @@ export const DEFAULT_CONFIG_PATH = ''
 export const DEFAULT_START_COMMAND = ''
 export const DEFAULT_AUTH_COMMAND = ''
 export const AUTH_CLIENTS = Object.freeze(['qoder', 'codex'])
+export const MAX_SYNC_INTERVAL_MINUTES = Math.floor(0x7fffffff / 60000)
+export function validSyncInterval(value) {
+  return Number.isInteger(value) && value >= 0 && value <= MAX_SYNC_INTERVAL_MINUTES
+}
 export const DEFAULT_SETTINGS = Object.freeze({
   configPath: DEFAULT_CONFIG_PATH,
   startCommand: DEFAULT_START_COMMAND,
@@ -12,6 +16,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   authClients: Object.freeze([]),
   managementUrl: '',
   autoStart: false,
+  modelSyncIntervalMinutes: 5,
 })
 
 export function toLosslessJson(value) {
@@ -51,6 +56,7 @@ export function resolveSettings(value = {}) {
     authClients: AUTH_CLIENTS.filter(client => authClients.includes(client)),
     managementUrl: typeof value.managementUrl === 'string' ? value.managementUrl.trim() : '',
     autoStart: value.autoStart === true,
+    modelSyncIntervalMinutes: validSyncInterval(value.modelSyncIntervalMinutes) ? value.modelSyncIntervalMinutes : 5,
   }
 }
 
@@ -58,11 +64,17 @@ export function parseSettingsPatch(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new PluginError('invalid-request', '设置请求格式无效。')
   }
-  const allowed = new Set(['configPath', 'startCommand', 'authCommand', 'authClients', 'managementUrl', 'autoStart'])
+  const allowed = new Set(['configPath', 'startCommand', 'authCommand', 'authClients', 'managementUrl', 'autoStart', 'modelSyncIntervalMinutes'])
   if (Object.keys(value).some(key => !allowed.has(key))) {
     throw new PluginError('invalid-request', '设置包含不支持的字段。')
   }
   const result = {}
+  if (value.modelSyncIntervalMinutes !== undefined) {
+    if (!validSyncInterval(value.modelSyncIntervalMinutes)) {
+      throw new PluginError('invalid-setting', `模型检查间隔须为 0 至 ${MAX_SYNC_INTERVAL_MINUTES} 的整数分钟，0 表示一次性同步。`)
+    }
+    result.modelSyncIntervalMinutes = value.modelSyncIntervalMinutes
+  }
   if (value.authClients !== undefined) {
     if (!Array.isArray(value.authClients) || value.authClients.some(client => !AUTH_CLIENTS.includes(client))) {
       throw new PluginError('invalid-setting', '认证 CLI 客户端仅支持 Qoder 和 Codex。')
@@ -164,6 +176,7 @@ const methods = {
   credentialDetails: parseCredentialFileRequest,
   credentialQuota: parseCredentialFileRequest,
   refreshCredentialQuota: parseCredentialFileRequest,
+  syncProviders: undefined,
 }
 
 export function remoteDescriptors() {
