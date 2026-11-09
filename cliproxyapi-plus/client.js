@@ -24,6 +24,7 @@ window.__ModuleLoader__.load({
     const ZH = {
       'meta.title': 'CLI Proxy',
       'meta.subtitle': 'CLI Proxy API 代理控制台',
+      'meta.source': '本插件开源地址', 'meta.thanks': '感谢开源项目',
       'nav.overview': '仪表盘', 'nav.authFiles': '凭证', 'nav.configuration': '配置', 'nav.activity': '运行日志',
       'action.refresh': '刷新', 'action.start': '一键启动', 'action.stop': '停止服务',
       'action.authenticate': '一键认证', 'action.reauthenticate': '重新认证', 'action.stopAuthentication': '停止认证',
@@ -113,6 +114,7 @@ window.__ModuleLoader__.load({
     }
     const EN = {
       'meta.title': 'CLI Proxy', 'meta.subtitle': 'CLI Proxy API console',
+      'meta.source': 'Plugin source code', 'meta.thanks': 'thanks to',
       'nav.overview': 'Dashboard', 'nav.authFiles': 'Credentials', 'nav.configuration': 'Configuration', 'nav.activity': 'Activity',
       'action.refresh': 'Refresh', 'action.start': 'Start server', 'action.stop': 'Stop server',
       'action.authenticate': 'Authenticate', 'action.reauthenticate': 'Reauthenticate', 'action.stopAuthentication': 'Stop authentication',
@@ -862,7 +864,9 @@ window.__ModuleLoader__.load({
           h('div', { key: 'copy' }, [
             h('h1', { key: 'title' }, t('meta.title')),
             h('p', { key: 'subtitle' }, t('meta.subtitle'), ' -- ',
-              h('a', { href: 'https://github.com/kaitranntt/CLIProxyAPIPlus', target: '_blank', rel: 'noopener noreferrer' }, 'https://github.com/kaitranntt/CLIProxyAPIPlus')),
+              h('a', { href: 'https://github.com/liuming-dev/dsh-plugins/tree/main/cliproxyapi-plus', target: '_blank', rel: 'noopener noreferrer' }, t('meta.source')),
+              ', ', t('meta.thanks'), ' ',
+              h('a', { href: 'https://github.com/kaitranntt/CLIProxyAPIPlus', target: '_blank', rel: 'noopener noreferrer' }, 'CLIProxyAPIPlus')),
           ]),
         ]),
         h(Status, { key: 'health', value: healthStatus }),

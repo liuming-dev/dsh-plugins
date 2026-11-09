@@ -1,6 +1,6 @@
 {
   "name": "cliproxyapi-plus",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Manage a local CLIProxyAPIPlus server, YAML configuration, Qoder and Codex credentials, live quota, and runtime logs.",
   "type": "module",
   "exports": {

@@ -162,6 +162,9 @@ try {
   chinese.on('pageerror', error => errors.push(error.message))
   fixture.search = '?emptySettings=1&locale=zh'
   await chinese.goto(fixture.href)
+  await chinese.locator('.cpa-header').waitFor()
+  assert.equal(await chinese.locator('.cpa-brand p').innerText(), 'CLI Proxy API 代理控制台 -- 本插件开源地址, 感谢开源项目 CLIProxyAPIPlus')
+  assert.equal(await chinese.getByRole('link', { name: '本插件开源地址', exact: true }).getAttribute('href'), 'https://github.com/liuming-dev/dsh-plugins/tree/main/cliproxyapi-plus')
   await chinese.getByRole('button', { name: '配置', exact: true }).click()
   for (const [label, placeholder] of [
     ['配置文件路径', '您的代理配置文件，绝对路径'],
